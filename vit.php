@@ -1,21 +1,28 @@
 <?php
 
-class ViT
+use phpy\PyClass;
+
+/**
+ * @property int|mixed $emb_size
+ * @property int $patch_size
+ * @property $conv
+ * @property $patch_emb
+ * @property $cls_token
+ * @property $pos_emb
+ * @property $tranformer_enc
+ * @property $cls_linear
+ */
+#[parent('Module', 'torch.nn')]
+class ViT extends PyClass
 {
-    private $emb_size;
-    private $patch_size;
-    private $patch_count;
-    private $conv;
-    private $patch_emb;
-    private $cls_token;
-    private $pos_emb;
-    private $tranformer_enc;
-    private $cls_linear;
     private $torch; // 存储导入的torch模块
     private $nn;    // 學儲导入的nn模块
+    private int $patch_count;
 
     public function __construct($emb_size = 16)
     {
+        parent::__construct();
+        $this->super()->__init__();
         $this->torch = PyCore::import('torch');
         $this->nn = PyCore::import('torch.nn');
         $this->emb_size = $emb_size;

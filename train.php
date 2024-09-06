@@ -1,5 +1,5 @@
 <?php
-
+require __DIR__ . '/bootstrap.php';
 require_once 'vit.php';
 require_once 'dataset.php';
 
@@ -10,9 +10,9 @@ $F = PyCore::import('torch.nn.functional');
 $os = PyCore::import('os');
 $sys = PyCore::import('sys');
 $info = $sys->version;
-PyCore::print($info) ;
+PyCore::print($info);
 //die;
-$DataLoader = PyCore::import('torch.utils.data');
+$torch_data = PyCore::import('torch.utils.data');
 
 // 检查CUDA是否可用，设置设备
 $DEVICE = $torch->cuda->is_available() ? 'cuda' : 'cpu';
@@ -32,14 +32,21 @@ try {
 }
 
 // 初始化Adam优化器，用于模型参数更新
-$optimizer = $torch->optim->Adam($model->parameters(), ['lr' => 1e-3]);
+$optimizer = $torch->optim->Adam($model->parameters(), lr: 1e-3);
 
 // 训练模型
 $EPOCH = 50;
 $BATCH_SIZE = 64;
 
-// 创建DataLoader用于数据加载，设置多线程加速
-$dataloader = new $DataLoader->DataLoader($dataset, ['batch_size' => $BATCH_SIZE, 'shuffle' => true, 'num_workers' => 10, 'persistent_workers' => true]);
+try {
+    // 创建DataLoader用于数据加载，设置多线程加速
+    $dataloader = $torch_data->DataLoader($dataset->self(), batch_size: $BATCH_SIZE, shuffle: true, num_workers: 10, persistent_workers: true);
+} catch (PyError $e) {
+    var_dump($e->getMessage());
+    phpy\Helper::printTraceback($e->traceback);
+    exit(34);
+}
+
 
 // 初始化迭代计数器
 $iter_count = 0;
@@ -50,7 +57,7 @@ for ($epoch = 0; $epoch < $EPOCH; $epoch++) {
     foreach ($dataloader as $batch) {
         list($imgs, $labels) = $batch;
 
-        // 前向传播，计算图片的logits
+        // 前向传播，计算图片的 logits
         $logits = $model->forward($imgs->to($DEVICE));
 
         // 计算交叉熵损失
