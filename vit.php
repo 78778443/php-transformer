@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/bootstrap.php';
+
 use phpy\PyClass;
 
 /**
